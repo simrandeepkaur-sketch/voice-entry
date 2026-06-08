@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Voice Ledger Entry</title>
+</head>
+<body>
+
+<h2>Voice Ledger Entry</h2>
+
+<textarea id="text" rows="5" cols="50"></textarea>
+<br><br>
+
+<button onclick="startVoice()">🎤 Speak</button>
+<button onclick="sendEntry()">Submit</button>
+
+<script>
+function startVoice() {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'en-IN';
+
+  recognition.onresult = function(event) {
+    document.getElementById('text').value =
+      event.results[0][0].transcript;
+  };
+
+  recognition.start();
+}
+
+async function sendEntry() {
+  const message = document.getElementById('text').value;
+
+  await fetch('https://prabhaasra.app.n8n.cloud/webhook/master-entry', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: message
+    })
+  });
+
+  alert('Entry sent successfully');
+}
+</script>
+
+</body>
+</html>
