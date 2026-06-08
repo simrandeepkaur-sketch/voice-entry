@@ -6,41 +6,45 @@
 </head>
 <body>
 
-<h2>Voice Ledger Entry</h2>
+<h1>Voice Ledger Entry</h1>
 
-<textarea id="text" rows="5" cols="50"></textarea>
-<br><br>
+<textarea id="text" rows="5" cols="35"></textarea><br><br>
 
 <button onclick="startVoice()">🎤 Speak</button>
 <button onclick="sendEntry()">Submit</button>
+
+<p id="status"></p>
 
 <script>
 function startVoice() {
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   recognition.lang = 'en-IN';
-
   recognition.onresult = function(event) {
-    document.getElementById('text').value =
-      event.results[0][0].transcript;
+    document.getElementById('text').value = event.results[0][0].transcript;
   };
-
   recognition.start();
 }
 
 async function sendEntry() {
   const message = document.getElementById('text').value;
+  document.getElementById('status').innerText = 'Sending...';
 
-  await fetch('https://prabhaasra.app.n8n.cloud/webhook/master-entry', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: message
-    })
-  });
+  try {
+    const response = await fetch('https://prabhaasra.app.n8n.cloud/webhook/master-entry', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ message: message })
+    });
 
-  alert('Entry sent successfully');
+    if (response.ok) {
+      document.getElementById('status').innerText = 'Entry sent successfully';
+      document.getElementById('text').value = '';
+    } else {
+      document.getElementById('status').innerText = 'Error: ' + response.status;
+    }
+  } catch (error) {
+    document.getElementById('status').innerText = 'Failed: ' + error.message;
+  }
 }
 </script>
 
